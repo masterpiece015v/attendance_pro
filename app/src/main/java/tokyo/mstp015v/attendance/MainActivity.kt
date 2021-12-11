@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.navigation.findNavController
@@ -16,6 +17,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.Scope
+import com.google.android.material.snackbar.Snackbar
 import com.google.api.client.extensions.android.http.AndroidHttp
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.json.gson.GsonFactory
@@ -32,7 +34,10 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import tokyo.mstp015v.attendance.databinding.ActivityMainBinding
+import tokyo.mstp015v.attendance.realm.Attendance
+import tokyo.mstp015v.attendance.realm.Group
 import tokyo.mstp015v.attendance.realm.Student
+import tokyo.mstp015v.attendance.realm.TimeTable
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -48,8 +53,8 @@ class MainActivity : AppCompatActivity() {
         setContentView( binding.root )
 
         //realm
-        val realm = Realm.getDefaultInstance()
-        var realmresult = realm.where<Student>().findAll()
+        //val realm = Realm.getDefaultInstance()
+        //var realmresult = realm.where<Student>().findAll()
 
         //toolbarの設定
         setSupportActionBar( binding.toolbar )
@@ -90,8 +95,11 @@ class MainActivity : AppCompatActivity() {
     //オプションを選択した時
     override fun onOptionsItemSelected(item: MenuItem): Boolean
         =when( item.itemId){
+
             //バックアップをタップ
             R.id.main_menu_item_backup->{
+                //プログレスバーを表示する
+                binding.progMain.visibility = ProgressBar.VISIBLE
                 //サインインをしてバックアップを取った後、サインアウトする
                 val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                     .requestScopes(Scope(DriveScopes.DRIVE_FILE))
@@ -148,44 +156,122 @@ class MainActivity : AppCompatActivity() {
                             //attendanceが複数ある場合、最も新しいファイルidを取得する
                             var maxdate: DateTime? = null
                             var f_flg = false
+                            var folder_id : String? = null
                             list.files.forEach {
                                 if( f_flg == false){
-                                    sheet_id = it.id
+                                    folder_id = it.id
                                     f_flg = true
                                 }
 
                                 if (maxdate != null && it.modifiedTime.value > maxdate!!.value) {
                                     maxdate = it.modifiedTime
-                                    sheet_id = it.id
+                                    folder_id = it.id
                                 }
                                 Log.d("file",
                                     "${it.name},${it.id},${it.modifiedTime},${it.mimeType}")
                             }
+
+                            //attendanceフォルダ下のattendance spreadsheetを探す
+                            val sp_list = drive.files().list()
+                                .setQ("name contains 'attendance' and trashed = false and mimeType='application/vnd.google-apps.spreadsheet' and '${folder_id!!}' in parents")
+                                .setSpaces("drive")
+                                .setFields("nextPageToken,files(id,name,mimeType,modifiedTime)")
+                                .setPageToken(pageToken)
+                                .execute()
+                            if( sp_list.files.size > 0 ) {
+                                Log.d("sp_id", sp_list.files.get(0).id)
+                                sheet_id = sp_list.files.get(0).id
+
+                                //シートにバックアップを取る
+                                realmToSpreadsheetBackup( credential )
+
+                            }else{
+                                //ないので作る
+                                sheet_id = newAttendanceSheet(credential,drive,it.id )
+
+                                //シートにバックアップを取る
+                                realmToSpreadsheetBackup( credential )
+
+                            }
                         }else{
-                            //attendanceがないので、新しく作る
+                            //attendanceフォルダがないので、新しく作る
                             val folder_id = newAttendanceFolder(credential,drive)
                             Log.d("folder_id" , folder_id )
                             sheet_id = newAttendanceSheet(credential,drive,folder_id)
+                            //シートにバックアップを取る
+                            realmToSpreadsheetBackup( credential )
                         }
                     }while( pageToken != null)
-                    //val pref = getPreferences(Context.MODE_PRIVATE)
-                    //pref?.edit().apply{
-                    //    this?.putString("sheet_id",sheet_id )
-                    //    this?.commit()
-                    //}
-
-                    //Log.d( "pref",pref?.getString("sheet_id" , "not")!! )
 
                 }
 
-
+                binding.progMain.visibility = ProgressBar.INVISIBLE
             }
 
         }.addOnFailureListener {
             Log.d("launch","失敗")
+            Snackbar.make(binding.root,"失敗しました",Snackbar.LENGTH_SHORT).show()
+            binding.progMain.visibility = ProgressBar.INVISIBLE
+
         }
 
     }
+
+    //realmからspreadsheetにバックアップを取る
+    fun realmToSpreadsheetBackup(credential: GoogleAccountCredential){
+        val service = Sheets.Builder(
+            AndroidHttp.newCompatibleTransport(),
+            GsonFactory(),
+            credential
+        ).setApplicationName("Sheets API")
+            .build()
+
+        val realm = Realm.getDefaultInstance()
+        val st = realm.where<Student>().findAll()
+        val sheetmap = mutableMapOf<String,MutableList<MutableList<Any>>>()
+        sheetmap.put("student",createValueList().apply{
+            st.forEach{
+                this.add( mutableListOf(it.id,it.st_id,it.st_name,it.g_name,it.no))
+            }
+        })
+
+        val gp = realm.where<Group>().findAll()
+        sheetmap.put("group",createValueList().apply{
+            gp.forEach{
+                this.add( mutableListOf(it.id,it.g_name,it.mentor))
+            }
+        })
+
+        val at = realm.where<Attendance>().findAll()
+        sheetmap.put("attendance",createValueList().apply{
+            at.forEach{
+                this.add( mutableListOf(
+                    it.id,it.st_id,it.st_name,it.g_name,it.no,it.year,
+                    it.month,it.date,it.timed,it.sub_name,it.at_code
+                ))
+            }
+        })
+
+        val tt = realm.where<TimeTable>().findAll()
+        sheetmap.put("timetable",createValueList().apply{
+            tt.forEach{
+                this.add( mutableListOf(
+                    it.id,it.g_name,it.day,it.timed,it.sub_name,it.sub_mentor
+                ))
+            }
+        })
+
+        sheetmap.forEach{
+            var result = service.spreadsheets().values()
+                .append( sheet_id , "${it.key}!A1:K1",createBody( it.value ) )
+                .setValueInputOption("RAW")
+
+            result.execute()
+        }
+        realm.close()
+        Snackbar.make(binding.root,"バックアップ完了",Snackbar.LENGTH_SHORT).show()
+    }
+    //driveにフォルダを作る
     fun newAttendanceFolder( credential:GoogleAccountCredential,drive : Drive):String{
 
         val filemetadata = File()
@@ -230,14 +316,25 @@ class MainActivity : AppCompatActivity() {
 
         val requests = mutableListOf<Request>()
         sheetNames.forEach {
-            requests.add( Request().setUpdateSpreadsheetProperties(
-                UpdateSpreadsheetPropertiesRequest()
-                    .setProperties(SpreadsheetProperties().setTitle(it))
-                    .setFields("title")
-            ))
+            requests.add(
+                Request().setAddSheet(
+                    AddSheetRequest().setProperties(
+                        SheetProperties().setTitle(it)
+                    )
+                )
+                //Request().setUpdateSpreadsheetProperties(
+                //UpdateSpreadsheetPropertiesRequest()
+                //    .setProperties(SpreadsheetProperties().setTitle(it))
+                //    .setFields("title")
+            )
         }
-
-        val body = BatchUpdateSpreadsheetRequest().setRequests( requests )
+        requests.add(
+            Request().setDeleteSheet(
+                DeleteSheetRequest().setSheetId(0)
+            )
+        )
+        val body = BatchUpdateSpreadsheetRequest()
+            .setRequests( requests )
         val res = service.spreadsheets().batchUpdate(sheet_id,body).execute()
 
 

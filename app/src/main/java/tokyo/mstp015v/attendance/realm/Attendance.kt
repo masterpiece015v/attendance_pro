@@ -6,7 +6,7 @@ import io.realm.annotations.PrimaryKey
 open class Attendance(
     @PrimaryKey
     var id:Long=0,
-    var g_id:String="",
+    var st_id:String="",
     var st_name:String="",
     var g_name:String="",
     var no:Int=0,
