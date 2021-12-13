@@ -3,8 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/main_menu_item_backup"
-        android:title="@string/main_menu_item_backup_value" />
+        android:title="@string/backup_value" />
     <item
         android:id="@+id/main_menu_item_restore"
-        android:title="@string/main_menu_item_restore_value" />
+        android:title="@string/restore_value" />
 </menu>

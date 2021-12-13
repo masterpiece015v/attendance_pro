@@ -2,20 +2,20 @@
 <menu xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item
-        android:id="@+id/drawer_item_data_add"
-        android:icon="@drawable/ic_data_add"
-        android:title="@string/drawer_item_data_add_value" />
-    <item
-        android:id="@+id/drawer_item_attendance_input"
-        android:icon="@drawable/ic_input"
-        android:title="@string/drawer_item_attendance_add_value" />
-    <item
-        android:id="@+id/drawer_item_attendance_output"
-        android:icon="@drawable/ic_output"
-        android:title="@string/drawer_item_attendance_output_value" />
-    <item
-        android:id="@+id/drawer_item_setting"
-        android:icon="@drawable/ic_setting"
-        android:title="@string/drawer_item_setting_value" />
+    <group >
+        <item
+            android:id="@+id/drawer_item_attendance_input"
+            android:icon="@drawable/ic_input"
+            android:title="@string/attendance_add_value" />
+        <item
+            android:id="@+id/drawer_item_attendance_output"
+            android:icon="@drawable/ic_output"
+            android:title="@string/attendance_output_value" />
+    </group>
+    <group >
+        <item
+            android:id="@+id/drawer_item_setting"
+            android:icon="@drawable/ic_setting"
+            android:title="@string/text_setting_value" />
+    </group>
 </menu>

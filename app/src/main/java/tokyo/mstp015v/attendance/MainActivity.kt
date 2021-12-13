@@ -28,6 +28,7 @@ import com.google.api.services.drive.model.File
 import com.google.api.services.sheets.v4.Sheets
 import com.google.api.services.sheets.v4.model.*
 import io.realm.Realm
+import io.realm.kotlin.createObject
 import io.realm.kotlin.where
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
@@ -112,7 +113,16 @@ class MainActivity : AppCompatActivity() {
             }
             //リストアをタップ
             R.id.main_menu_item_restore->{
-                //サインインをしてリストアをした後、サインアウトする
+                //プログレスバーを表示する
+                binding.progMain.visibility = ProgressBar.VISIBLE
+                //サインインをしてリストアした後、サインアウトする
+                val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestScopes(Scope(DriveScopes.DRIVE_FILE))
+                    .requestEmail()
+                    .build()
+                client = GoogleSignIn.getClient(this, gso)
+                val intent = client!!.signInIntent
+                restore_launcher.launch(intent)
                 true
             }
             else -> {
@@ -120,7 +130,7 @@ class MainActivity : AppCompatActivity() {
             }
     }
 
-    //バックアップリストアのコールバックメソッド
+    //バックアップのコールバックメソッド
     val backup_launcher = registerForActivityResult( ActivityResultContracts.StartActivityForResult()){
         val task = GoogleSignIn.getSignedInAccountFromIntent(it.data)
 
@@ -206,6 +216,8 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 binding.progMain.visibility = ProgressBar.INVISIBLE
+                client!!.signOut()
+
             }
 
         }.addOnFailureListener {
@@ -216,6 +228,201 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
+
+    //リストアのコールバックメソッド
+    val restore_launcher = registerForActivityResult( ActivityResultContracts.StartActivityForResult()){
+        val task = GoogleSignIn.getSignedInAccountFromIntent(it.data)
+
+        task.addOnSuccessListener {
+            val credential = GoogleAccountCredential.usingOAuth2(this,
+                Collections.singleton(DriveScopes.DRIVE_FILE))
+
+            credential.selectedAccount = it.account
+
+            //コルーチン
+            MainScope().launch{
+                //GoogleDriveへのアクセス
+                val drive = Drive.Builder(
+                    AndroidHttp.newCompatibleTransport(),
+                    GsonFactory(),
+                    credential
+                ).setApplicationName("Drive API").build()
+
+                var pageToken:String? = null
+                //非同期通信
+                withContext( Dispatchers.Default ){
+                    do {
+                        //attendanceフォルダを探す
+                        val list = drive.files().list()
+                            .setQ("name contains 'attendance' and trashed = false and mimeType='application/vnd.google-apps.folder'")
+                            .setSpaces("drive")
+                            .setFields("nextPageToken,files(id,name,mimeType,modifiedTime)")
+                            .setPageToken(pageToken)
+                            .execute()
+
+                        Log.d("file_size" , list.files.size.toString() )
+
+                        if( list.files.size > 0 ) {
+                            //attendanceが複数ある場合、最も新しいファイルidを取得する
+                            var maxdate: DateTime? = null
+                            var f_flg = false
+                            var folder_id : String? = null
+                            list.files.forEach {
+                                if( f_flg == false){
+                                    folder_id = it.id
+                                    f_flg = true
+                                }
+
+                                if (maxdate != null && it.modifiedTime.value > maxdate!!.value) {
+                                    maxdate = it.modifiedTime
+                                    folder_id = it.id
+                                }
+                                Log.d("file",
+                                    "${it.name},${it.id},${it.modifiedTime},${it.mimeType}")
+                            }
+
+                            //attendanceフォルダ下のattendance spreadsheetを探す
+                            val sp_list = drive.files().list()
+                                .setQ("name contains 'attendance' and trashed = false and mimeType='application/vnd.google-apps.spreadsheet' and '${folder_id!!}' in parents")
+                                .setSpaces("drive")
+                                .setFields("nextPageToken,files(id,name,mimeType,modifiedTime)")
+                                .setPageToken(pageToken)
+                                .execute()
+                            if( sp_list.files.size > 0 ) {
+                                Log.d("sp_id", sp_list.files.get(0).id)
+                                sheet_id = sp_list.files.get(0).id
+                                //realmにリストアする
+                                spreadsheetToRealmRestore(credential)
+
+                            }else{
+                                //ないので作る
+                                sheet_id = newAttendanceSheet(credential,drive,it.id )
+
+                                //シートにバックアップを取る
+                                //realmToSpreadsheetBackup( credential )
+
+                            }
+                        }else{
+                            //attendanceフォルダがないので、新しく作る
+                            val folder_id = newAttendanceFolder(credential,drive)
+                            Log.d("folder_id" , folder_id )
+                            sheet_id = newAttendanceSheet(credential,drive,folder_id)
+                            //シートにバックアップを取る
+                            //realmToSpreadsheetBackup( credential )
+                        }
+                    }while( pageToken != null)
+
+                }
+
+                binding.progMain.visibility = ProgressBar.INVISIBLE
+                client!!.signOut()
+
+            }
+
+        }.addOnFailureListener {
+            Log.d("launch","失敗")
+            Snackbar.make(binding.root,"失敗しました",Snackbar.LENGTH_SHORT).show()
+            binding.progMain.visibility = ProgressBar.INVISIBLE
+
+        }
+
+    }
+
+    //realmからspreadsheetにバックアップを取る
+    fun spreadsheetToRealmRestore(credential: GoogleAccountCredential){
+        val service = Sheets.Builder(
+            AndroidHttp.newCompatibleTransport(),
+            GsonFactory(),
+            credential
+        ).setApplicationName("Sheets API")
+            .build()
+
+        val realm = Realm.getDefaultInstance()
+
+        //realmのデータをいったん削除して追加する
+        val st = realm.where<Student>().findAll()
+        realm.executeTransaction{
+            st.deleteAllFromRealm()
+        }
+        val gp = realm.where<Group>().findAll()
+        realm.executeTransaction{
+            gp.deleteAllFromRealm()
+        }
+        val at = realm.where<Attendance>().findAll()
+        realm.executeTransaction{
+            at.deleteAllFromRealm()
+        }
+        val tt = realm.where<TimeTable>().findAll()
+        realm.executeTransaction{
+            tt.deleteAllFromRealm()
+        }
+        realm.close()
+
+        //spreadsheetの内容を書き込む
+        MainScope().launch{
+            val realm = Realm.getDefaultInstance()
+            withContext(Dispatchers.Default ){
+                //studentのリストア
+                var res = service.spreadsheets().values().get(sheet_id!!,"student!A2:K300").execute()
+
+                res.getValues()?.forEach { row->
+                    realm.executeTransaction{
+                        val rst = it.createObject<Student>( row[0].toString().toLong() )
+                        rst.st_id = row[1].toString()
+                        rst.st_name = row[2].toString()
+                        rst.g_name = row[3].toString()
+                        rst.no = row[4].toString().toInt()
+                    }
+                }
+                //groupのリストア
+                res = service.spreadsheets().values().get(sheet_id!!,"group!A2:K300").execute()
+                res.getValues()?.forEach {  row ->
+                    realm.executeTransaction{
+                        val rgp = it.createObject<Group>( row[0].toString().toLong() )
+                        rgp.g_name = row[1].toString()
+                        rgp.mentor = row[2].toString()
+                    }
+                }
+
+                //attendanceのリストア
+                res = service.spreadsheets().values().get(sheet_id!!,"attendance!A2:K1000").execute()
+                res.getValues()?.forEach { row ->
+                    realm.executeTransaction{
+                        val rat = it.createObject<Attendance>(row[0].toString())
+                        rat.st_id = row[1].toString()
+                        rat.st_name = row[2].toString()
+                        rat.g_name = row[3].toString()
+                        rat.no = row[4].toString().toInt()
+                        rat.year = row[5].toString().toInt()
+                        rat.month = row[6].toString().toInt()
+                        rat.date = row[7].toString().toInt()
+                        rat.timed = row[8].toString().toInt()
+                        rat.sub_name = row[9].toString()
+                        rat.at_code = row[10].toString().toInt()
+                    }
+                }
+
+                //timetableのリストア
+                res = service.spreadsheets().values().get(sheet_id!!,"timetable!A2:K1000").execute()
+                res.getValues()?.forEach { row ->
+                    realm.executeTransaction{
+                        val rtt = it.createObject<TimeTable>(row[0].toString())
+                        rtt.g_name = row[1].toString()
+                        rtt.day = row[2].toString()
+                        rtt.timed = row[3].toString().toInt()
+                        rtt.sub_name = row[4].toString()
+                        rtt.sub_mentor = row[5].toString()
+                    }
+                }
+            }
+
+
+            Snackbar.make(binding.root,"リストア完了",Snackbar.LENGTH_SHORT).show()
+            binding.progMain.visibility = ProgressBar.INVISIBLE
+            realm.close()
+        }
+    }
+
 
     //realmからspreadsheetにバックアップを取る
     fun realmToSpreadsheetBackup(credential: GoogleAccountCredential){
@@ -271,6 +478,8 @@ class MainActivity : AppCompatActivity() {
         realm.close()
         Snackbar.make(binding.root,"バックアップ完了",Snackbar.LENGTH_SHORT).show()
     }
+
+
     //driveにフォルダを作る
     fun newAttendanceFolder( credential:GoogleAccountCredential,drive : Drive):String{
 
