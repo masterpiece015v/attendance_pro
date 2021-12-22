@@ -8,5 +8,14 @@
     <string name="backup_value">バックアップ</string>
     <string name="restore_value">リストア</string>
     <string name="text_setting_value">セッティング</string>
+    <string name="text_data_make">データを作成する</string>
+    <string name="text_sat_enable_switch">土曜日を有効にする</string>
+    <string name="text_one_daye_timed">一日の時間数</string>
+    <string name="text_make_group">グループを作る</string>
+    <string name="text_student_make">学生を作る</string>
+    <string name="text_timetable_make">時間割を作る</string>
+    <string name="text_base_setting">基本設定</string>
+    <string name="text_main_title">出席管理アプリ</string>
+
 
 </resources>

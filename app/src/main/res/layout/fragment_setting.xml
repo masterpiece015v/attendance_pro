@@ -3,54 +3,157 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="10dp"
+    android:layout_margin="15dp"
     tools:context=".SettingFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/white"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/textView5"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:textSize="34sp"
-            android:textStyle="bold"
-            tools:text="@string/text_setting_value" />
+            android:background="@color/gray"
+            android:orientation="vertical"
+            android:paddingBottom="1dp">
 
-        <TextView
-            android:id="@+id/textView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:text="TextView"
-            android:textSize="24sp" />
+            <TextView
+                android:id="@+id/text_data_make"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="0dp"
+                android:layout_marginTop="0dp"
+                android:layout_marginRight="0dp"
+                android:layout_marginBottom="0dp"
+                android:background="@color/white"
+                android:paddingLeft="10dp"
+                android:paddingTop="10dp"
+                android:paddingRight="10dp"
+                android:paddingBottom="5dp"
+                android:text="@string/text_data_make"
+                android:textColor="@color/purple_700"
+                android:textSize="12sp" />
 
-        <Switch
-            android:id="@+id/switch2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:minHeight="48dp"
-            android:text="Switch"
-            android:textSize="24sp" />
+            <TextView
+                android:id="@+id/textDataMakeGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="0dp"
+                android:background="@color/white"
+                android:foreground="?attr/selectableItemBackgroundBorderless"
+                android:paddingLeft="10dp"
+                android:paddingTop="10dp"
+                android:paddingRight="10dp"
+                android:paddingBottom="10dp"
+                android:text="@string/text_make_group"
+                android:textSize="16sp" />
 
-        <TextView
-            android:id="@+id/textView4"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:text="TextView"
-            android:textSize="24sp" />
+            <TextView
+                android:id="@+id/textDataMakeStudent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="0dp"
+                android:background="@color/white"
+                android:foreground="?attr/selectableItemBackgroundBorderless"
+                android:paddingLeft="10dp"
+                android:paddingTop="10dp"
+                android:paddingRight="10dp"
+                android:paddingBottom="10dp"
+                android:text="@string/text_student_make"
+                android:textSize="16sp" />
 
-        <SeekBar
-            android:id="@+id/seekBar"
+            <TextView
+                android:id="@+id/textDataMakeTimetable"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="0dp"
+                android:layout_marginBottom="2dp"
+                android:background="@color/white"
+                android:foreground="?attr/selectableItemBackgroundBorderless"
+                android:paddingLeft="10dp"
+                android:paddingTop="10dp"
+                android:paddingRight="10dp"
+                android:paddingBottom="10dp"
+                android:text="@string/text_timetable_make"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:max="8"
-            android:padding="10dp" />
+            android:background="@color/gray"
+            android:orientation="vertical"
+            android:paddingBottom="1dp">
+
+            <TextView
+                android:id="@+id/text_base_setting"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="0dp"
+                android:background="@color/white"
+                android:paddingLeft="10dp"
+                android:paddingTop="5dp"
+                android:paddingRight="10dp"
+                android:paddingBottom="5dp"
+                android:text="@string/text_base_setting"
+                android:textColor="@color/purple_700"
+                android:textSize="12sp" />
+
+            <Switch
+                android:id="@+id/switchSatEnable"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="0dp"
+                android:layout_marginLeft="0dp"
+                android:layout_marginTop="0dp"
+                android:layout_marginRight="0dp"
+                android:layout_marginBottom="0dp"
+                android:background="@color/white"
+                android:minHeight="48dp"
+                android:padding="10dp"
+                android:text="@string/text_sat_enable_switch"
+                android:textSize="16sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/text_one_date_timed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@color/white"
+                    android:paddingLeft="10dp"
+                    android:paddingTop="5dp"
+                    android:text="@string/text_one_daye_timed"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/text_timed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@color/white"
+                    android:paddingLeft="5dp"
+                    android:paddingTop="5dp"
+                    android:text="5"
+                    android:textSize="16sp" />
+
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/seekOneDateTimed"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/white"
+                android:max="8"
+                android:padding="10dp"
+                android:progress="5" />
+        </LinearLayout>
+
 
     </LinearLayout>
 </FrameLayout>

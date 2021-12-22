@@ -53,22 +53,39 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView( binding.root )
 
-        //realm
-        //val realm = Realm.getDefaultInstance()
-        //var realmresult = realm.where<Student>().findAll()
-
         //toolbarの設定
+        binding.toolbar.setTitle("出席管理アプリ")
         setSupportActionBar( binding.toolbar )
-        //supportActionBar?.setDisplayHomeAsUpEnabled(true )
 
         //drawerの設定
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.navHostFragment) as NavHostFragment
         val navController = navHostFragment.navController
         val appBarConf = AppBarConfiguration.Builder(navController.graph).setOpenableLayout(binding.drawerLayout).build()
+
         NavigationUI.setupWithNavController(binding.toolbar , navController,appBarConf)
-        //NavigationUI.setupActionBarWithNavController(this,navController,binding.drawerLayout)
+
         //Drawerのmenu_itemをタップした時のイベントを登録する
         binding.navView.setNavigationItemSelectedListener {
+            when(it.itemId){
+                R.id.drawer_item_attendance_input->{
+                    //出席入力
+                    val action = MainFragmentDirections.actionToEnterAttendanceForGroupFragment()
+                    findNavController(R.id.navHostFragment).navigate( action )
+                    binding.drawerLayout.closeDrawers()
+                }
+                R.id.drawer_item_attendance_output->{
+                    //出席確認
+                    val action = MainFragmentDirections.actionToCheckAttendanceForGroupFragment()
+                    findNavController(R.id.navHostFragment).navigate( action )
+                    binding.drawerLayout.closeDrawers()
+                }
+                R.id.drawer_item_setting->{
+                    //セッティング
+                    val action = MainFragmentDirections.actionToSettingFragment()
+                    findNavController(R.id.navHostFragment).navigate(action)
+                    binding.drawerLayout.closeDrawers()
+                }
+            }
             true
         }
 
@@ -85,18 +102,15 @@ class MainActivity : AppCompatActivity() {
         val navController = this.findNavController(R.id.navHostFragment)
         return NavigationUI.navigateUp(navController,binding.drawerLayout)
     }
-
     //オプションメニューを作る
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate( R.menu.main_menu ,menu)
         this.menu = menu!!
         return true
     }
-
     //オプションを選択した時
     override fun onOptionsItemSelected(item: MenuItem): Boolean
         =when( item.itemId){
-
             //バックアップをタップ
             R.id.main_menu_item_backup->{
                 //プログレスバーを表示する
@@ -129,7 +143,6 @@ class MainActivity : AppCompatActivity() {
                 true
             }
     }
-
     //バックアップのコールバックメソッド
     val backup_launcher = registerForActivityResult( ActivityResultContracts.StartActivityForResult()){
         val task = GoogleSignIn.getSignedInAccountFromIntent(it.data)
@@ -228,7 +241,6 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
-
     //リストアのコールバックメソッド
     val restore_launcher = registerForActivityResult( ActivityResultContracts.StartActivityForResult()){
         val task = GoogleSignIn.getSignedInAccountFromIntent(it.data)
@@ -328,7 +340,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    //realmからspreadsheetにバックアップを取る
+    //リストア関数
     fun spreadsheetToRealmRestore(credential: GoogleAccountCredential){
         val service = Sheets.Builder(
             AndroidHttp.newCompatibleTransport(),
@@ -361,37 +373,66 @@ class MainActivity : AppCompatActivity() {
         //spreadsheetの内容を書き込む
         MainScope().launch{
             val realm = Realm.getDefaultInstance()
+            var st_res : ValueRange? = null
+            var gr_res : ValueRange? = null
+            var at_res : ValueRange? = null
+            var tt_res : ValueRange? = null
             withContext(Dispatchers.Default ){
                 //studentのリストア
-                var res = service.spreadsheets().values().get(sheet_id!!,"student!A2:K300").execute()
-
-                res.getValues()?.forEach { row->
-                    realm.executeTransaction{
-                        val rst = it.createObject<Student>( row[0].toString().toLong() )
+                st_res = service.spreadsheets().values().get(sheet_id!!,"student!A1:K300").execute()
+                //groupのリストア
+                gr_res = service.spreadsheets().values().get(sheet_id!!,"group!A1:K300").execute()
+                //attendanceのリストア
+                at_res = service.spreadsheets().values().get(sheet_id!!,"attendance!A1:K1000").execute()
+                //timetableのリストア
+                tt_res = service.spreadsheets().values().get(sheet_id!!,"timetable!A1:K1000").execute()
+            }
+            //レルムに追加
+            realm.executeTransaction{
+                it.where<Student>().findAll().deleteAllFromRealm()
+                it.where<Group>().findAll().deleteAllFromRealm()
+                it.where<Attendance>().findAll().deleteAllFromRealm()
+                it.where<TimeTable>().findAll().deleteAllFromRealm()
+            }
+            var cnt = 0
+            st_res!!.getValues()?.forEach { row->
+                if ( cnt > 0 ) {
+                    realm.executeTransaction {
+                        val maxid = it.where<Student>().max("id")
+                        val nextid = (maxid?.toLong() ?: 0L) + 1L
+                        val rst = it.createObject<Student>( nextid )
                         rst.st_id = row[1].toString()
                         rst.st_name = row[2].toString()
                         rst.g_name = row[3].toString()
                         rst.no = row[4].toString().toInt()
                     }
                 }
-                //groupのリストア
-                res = service.spreadsheets().values().get(sheet_id!!,"group!A2:K300").execute()
-                res.getValues()?.forEach {  row ->
+                cnt++
+            }
+            cnt = 0
+            gr_res!!.getValues()?.forEach {  row ->
+                if( cnt > 0 ){
                     realm.executeTransaction{
-                        val rgp = it.createObject<Group>( row[0].toString().toLong() )
+                        val maxid = it.where<Group>().max("id")
+                        val nextid = (maxid?.toLong() ?: 0L) + 1L
+                        val rgp = it.createObject<Group>( nextid)
                         rgp.g_name = row[1].toString()
                         rgp.mentor = row[2].toString()
                     }
                 }
-
-                //attendanceのリストア
-                res = service.spreadsheets().values().get(sheet_id!!,"attendance!A2:K1000").execute()
-                res.getValues()?.forEach { row ->
-                    realm.executeTransaction{
-                        val rat = it.createObject<Attendance>(row[0].toString())
+                cnt++
+            }
+            cnt = 0
+            at_res!!.getValues()?.forEach { row ->
+                if( cnt > 0 ) {
+                    realm.executeTransaction {
+                        val maxid = it.where<Attendance>().max("id")
+                        val nextid = (maxid?.toLong() ?: 0L) + 1L
+                        val rat = it.createObject<Attendance>( nextid )
                         rat.st_id = row[1].toString()
                         rat.st_name = row[2].toString()
                         rat.g_name = row[3].toString()
+                        Log.d("attendance", row[3].toString())
                         rat.no = row[4].toString().toInt()
                         rat.year = row[5].toString().toInt()
                         rat.month = row[6].toString().toInt()
@@ -401,12 +442,15 @@ class MainActivity : AppCompatActivity() {
                         rat.at_code = row[10].toString().toInt()
                     }
                 }
-
-                //timetableのリストア
-                res = service.spreadsheets().values().get(sheet_id!!,"timetable!A2:K1000").execute()
-                res.getValues()?.forEach { row ->
-                    realm.executeTransaction{
-                        val rtt = it.createObject<TimeTable>(row[0].toString())
+                cnt++
+            }
+            cnt = 0
+            tt_res!!.getValues()?.forEach { row ->
+                if( cnt > 0 ) {
+                    realm.executeTransaction {
+                        val maxid = it.where<TimeTable>().max("id")
+                        val nextid = (maxid?.toLong() ?: 0L) + 1L
+                        val rtt = it.createObject<TimeTable>( nextid )
                         rtt.g_name = row[1].toString()
                         rtt.day = row[2].toString()
                         rtt.timed = row[3].toString().toInt()
@@ -416,15 +460,12 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-
             Snackbar.make(binding.root,"リストア完了",Snackbar.LENGTH_SHORT).show()
             binding.progMain.visibility = ProgressBar.INVISIBLE
             realm.close()
         }
     }
-
-
-    //realmからspreadsheetにバックアップを取る
+    //バックアップ関数
     fun realmToSpreadsheetBackup(credential: GoogleAccountCredential){
         val service = Sheets.Builder(
             AndroidHttp.newCompatibleTransport(),
@@ -433,6 +474,44 @@ class MainActivity : AppCompatActivity() {
         ).setApplicationName("Sheets API")
             .build()
 
+        //シートの内容を消す
+        var req = service.Spreadsheets().get(sheet_id)
+        val res = req.execute()
+
+        val st_pro = mutableMapOf<Int,Int>()
+        for ( item in res.sheets ){
+            st_pro.put( item.properties.get("sheetId").toString().toInt() ,item.properties.gridProperties.rowCount )
+            Log.d( "item" , item.properties.toString() )
+        }
+
+        val requests = mutableListOf<Request>()
+        st_pro.forEach {
+            requests.add(
+                Request().setDeleteDimension(
+                    DeleteDimensionRequest().setRange(
+                        DimensionRange().setSheetId(it.key).setDimension("ROWS").setStartIndex(1).setEndIndex(it.value)
+                    )
+                )
+            )
+        }
+
+        st_pro.forEach {
+            requests.add(
+                Request().setInsertDimension(
+                    InsertDimensionRequest().setRange(
+                        DimensionRange().setSheetId(it.key).setDimension("ROWS").setStartIndex(1).setEndIndex(1000)
+                    ).setInheritFromBefore(true)
+                )
+            )
+        }
+
+
+        val body = BatchUpdateSpreadsheetRequest().setRequests( requests )
+        service.spreadsheets().batchUpdate( sheet_id,body ).execute()
+
+        //Log.d( "response" , sheets_id.toString()  )
+
+        //realmから書き込むデータを作るrequest
         val realm = Realm.getDefaultInstance()
         val st = realm.where<Student>().findAll()
         val sheetmap = mutableMapOf<String,MutableList<MutableList<Any>>>()
@@ -469,17 +548,14 @@ class MainActivity : AppCompatActivity() {
         })
 
         sheetmap.forEach{
-            var result = service.spreadsheets().values()
-                .append( sheet_id , "${it.key}!A1:K1",createBody( it.value ) )
-                .setValueInputOption("RAW")
-
-            result.execute()
+            val result = service.spreadsheets().values().append(
+                sheet_id , "${it.key}!A2:K",createBody( it.value )
+            ).setValueInputOption("RAW").execute()
         }
+
         realm.close()
         Snackbar.make(binding.root,"バックアップ完了",Snackbar.LENGTH_SHORT).show()
     }
-
-
     //driveにフォルダを作る
     fun newAttendanceFolder( credential:GoogleAccountCredential,drive : Drive):String{
 
@@ -491,6 +567,7 @@ class MainActivity : AppCompatActivity() {
         return file.id
 
     }
+
     //新しくattendanceシートを作る
     fun newAttendanceSheet( credential : GoogleAccountCredential,drive:Drive,folder_id:String ) : String{
         val folders = mutableListOf<String>()
@@ -575,7 +652,7 @@ class MainActivity : AppCompatActivity() {
         //return spreadsheet.spreadsheetId
         return sheet_id
     }
-
+    //
     fun createValueList():MutableList<MutableList<Any>>{
         val list = mutableListOf<MutableList<Any>>()
         return list
