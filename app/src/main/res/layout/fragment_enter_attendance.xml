@@ -7,16 +7,25 @@
     android:layout_height="match_parent"
     tools:context=".EnterAttendanceFragment" >
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerAttendance"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:listitem="@layout/attendance_item" >
+        android:orientation="vertical">
 
-    </androidx.recyclerview.widget.RecyclerView>
+        <TextView
+            android:id="@+id/textEnterAttendance"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="TextView" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerAttendance"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:listitem="@layout/attendance_item">
+
+        </androidx.recyclerview.widget.RecyclerView>
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

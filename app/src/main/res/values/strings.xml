@@ -16,6 +16,7 @@
     <string name="text_timetable_make">時間割を作る</string>
     <string name="text_base_setting">基本設定</string>
     <string name="text_main_title">出席管理アプリ</string>
+    <string name="subject_name">科目名</string>
 
 
 </resources>

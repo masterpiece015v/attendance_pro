@@ -9,7 +9,7 @@
         android:id="@+id/mainFragment"
         android:name="tokyo.mstp015v.attendance.MainFragment"
         android:label="@string/text_main_title"
-        tools:layout="@layout/fragment_main" >
+        tools:layout="@layout/fragment_main">
         <action
             android:id="@+id/action_to_settingFragment"
             app:destination="@id/settingFragment" />
@@ -24,7 +24,7 @@
         android:id="@+id/settingFragment"
         android:name="tokyo.mstp015v.attendance.SettingFragment"
         android:label="@string/text_setting_value"
-        tools:layout="@layout/fragment_setting" >
+        tools:layout="@layout/fragment_setting">
         <action
             android:id="@+id/action_to_mainFragment"
             app:destination="@id/mainFragment" />
@@ -51,7 +51,7 @@
         android:id="@+id/makeStudentForGroupListFragment"
         android:name="tokyo.mstp015v.attendance.MakeStudentForGroupListFragment"
         android:label="クラス選択"
-        tools:layout="@layout/fragment_make_student_for_group_list" >
+        tools:layout="@layout/fragment_make_student_for_group_list">
         <action
             android:id="@+id/action_to_settingFragment"
             app:destination="@id/settingFragment" />
@@ -63,20 +63,20 @@
         android:id="@+id/makeStudentFragment"
         android:name="tokyo.mstp015v.attendance.MakeStudentFragment"
         android:label="学生を作る"
-        tools:layout="@layout/fragment_make_student" >
+        tools:layout="@layout/fragment_make_student">
         <action
             android:id="@+id/action_to_makeStudentForGroupListFragment"
             app:destination="@id/makeStudentForGroupListFragment" />
         <argument
             android:name="g_name"
-            app:argType="string"
-            android:defaultValue="null" />
+            android:defaultValue="null"
+            app:argType="string" />
     </fragment>
     <fragment
         android:id="@+id/makeTimeTableForGroupFragment"
         android:name="tokyo.mstp015v.attendance.MakeTimeTableForGroupFragment"
         android:label="クラス選択"
-        tools:layout="@layout/fragment_make_time_table_for_group" >
+        tools:layout="@layout/fragment_make_time_table_for_group">
         <action
             android:id="@+id/action_to_settingFragment"
             app:destination="@id/settingFragment" />
@@ -88,7 +88,7 @@
         android:id="@+id/makeTimeTableFragment"
         android:name="tokyo.mstp015v.attendance.MakeTimeTableFragment"
         android:label="時間割作成"
-        tools:layout="@layout/fragment_make_time_table" >
+        tools:layout="@layout/fragment_make_time_table">
         <action
             android:id="@+id/action_to_makeTimeTableForGroupFragment"
             app:destination="@id/makeTimeTableForGroupFragment" />
@@ -101,7 +101,7 @@
         android:id="@+id/enterAttendanceForGroupFragment"
         android:name="tokyo.mstp015v.attendance.EnterAttendanceForGroupFragment"
         android:label="クラス選択"
-        tools:layout="@layout/fragment_enter_attendance_for_group" >
+        tools:layout="@layout/fragment_enter_attendance_for_group">
         <action
             android:id="@+id/action_to_mainFragment"
             app:destination="@id/mainFragment" />
@@ -113,7 +113,7 @@
         android:id="@+id/enterAttendanceTimeTableFragment"
         android:name="tokyo.mstp015v.attendance.EnterAttendanceTimeTableFragment"
         android:label="時間選択"
-        tools:layout="@layout/fragment_enter_attendance_time_table" >
+        tools:layout="@layout/fragment_enter_attendance_time_table">
         <action
             android:id="@+id/action_to_enterAttendanceForGroupFragment"
             app:destination="@id/enterAttendanceForGroupFragment" />
@@ -128,14 +128,15 @@
         android:id="@+id/enterAttendanceFragment"
         android:name="tokyo.mstp015v.attendance.EnterAttendanceFragment"
         android:label="出席入力"
-        tools:layout="@layout/fragment_enter_attendance" >
+        tools:layout="@layout/fragment_enter_attendance">
         <action
             android:id="@+id/action_to_enterAttendanceTimeTableFragment"
             app:destination="@id/enterAttendanceTimeTableFragment" />
         <argument
             android:name="g_name"
             app:argType="string" />
-        <argument android:name="sub_name"
+        <argument
+            android:name="sub_name"
             app:argType="string" />
         <argument
             android:name="year"
@@ -149,12 +150,15 @@
         <argument
             android:name="timed"
             app:argType="integer" />
+        <argument
+            android:name="day"
+            app:argType="string" />
     </fragment>
     <fragment
         android:id="@+id/checkAttendanceForGroupFragment"
         android:name="tokyo.mstp015v.attendance.CheckAttendanceForGroupFragment"
         android:label="fragment_check_attendance_for_group"
-        tools:layout="@layout/fragment_check_attendance_for_group" >
+        tools:layout="@layout/fragment_check_attendance_for_group">
         <action
             android:id="@+id/action_to_mainFragment"
             app:destination="@id/mainFragment" />
@@ -166,7 +170,7 @@
         android:id="@+id/checkAttendanceForStudentFragment"
         android:name="tokyo.mstp015v.attendance.CheckAttendanceForStudentFragment"
         android:label="fragment_check_attendance_for_student"
-        tools:layout="@layout/fragment_check_attendance_for_student" >
+        tools:layout="@layout/fragment_check_attendance_for_student">
         <action
             android:id="@+id/action_to_checkAttendanceForGroupFragment"
             app:destination="@id/checkAttendanceForGroupFragment" />
@@ -181,7 +185,7 @@
         android:id="@+id/checkAttendanceFragment"
         android:name="tokyo.mstp015v.attendance.CheckAttendanceFragment"
         android:label="fragment_check_attendance"
-        tools:layout="@layout/fragment_check_attendance" >
+        tools:layout="@layout/fragment_check_attendance">
         <action
             android:id="@+id/action_to_checkAttendanceForStudentFragment"
             app:destination="@id/checkAttendanceForStudentFragment" />

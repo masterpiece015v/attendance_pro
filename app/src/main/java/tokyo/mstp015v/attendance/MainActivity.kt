@@ -35,10 +35,13 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import tokyo.mstp015v.attendance.databinding.ActivityMainBinding
+//import tokyo.mstp015v.attendance.databinding.ActivityMainBinding
+
 import tokyo.mstp015v.attendance.realm.Attendance
 import tokyo.mstp015v.attendance.realm.Group
 import tokyo.mstp015v.attendance.realm.Student
 import tokyo.mstp015v.attendance.realm.TimeTable
+import java.lang.IndexOutOfBoundsException
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -412,7 +415,7 @@ class MainActivity : AppCompatActivity() {
             cnt = 0
             gr_res!!.getValues()?.forEach {  row ->
                 if( cnt > 0 ){
-                    realm.executeTransaction{
+                    realm.executeTransaction {
                         val maxid = it.where<Group>().max("id")
                         val nextid = (maxid?.toLong() ?: 0L) + 1L
                         val rgp = it.createObject<Group>( nextid)
@@ -425,7 +428,7 @@ class MainActivity : AppCompatActivity() {
             cnt = 0
             at_res!!.getValues()?.forEach { row ->
                 if( cnt > 0 ) {
-                    realm.executeTransaction {
+                    realm.executeTransaction  {
                         val maxid = it.where<Attendance>().max("id")
                         val nextid = (maxid?.toLong() ?: 0L) + 1L
                         val rat = it.createObject<Attendance>( nextid )
@@ -454,10 +457,16 @@ class MainActivity : AppCompatActivity() {
                         rtt.g_name = row[1].toString()
                         rtt.day = row[2].toString()
                         rtt.timed = row[3].toString().toInt()
-                        rtt.sub_name = row[4].toString()
-                        rtt.sub_mentor = row[5].toString()
+                        try {
+                            rtt.sub_name = row[4].toString()
+                            rtt.sub_mentor = row[5].toString()
+                        }catch(e : IndexOutOfBoundsException){
+                            Log.d( "exception", e.toString() )
+                        }
+                        Log.d("tt",rtt.sub_name)
                     }
                 }
+                cnt++
             }
 
             Snackbar.make(binding.root,"リストア完了",Snackbar.LENGTH_SHORT).show()

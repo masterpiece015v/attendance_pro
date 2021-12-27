@@ -6,13 +6,46 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import io.realm.Realm
 import io.realm.kotlin.where
 import tokyo.mstp015v.attendance.databinding.FragmentCheckAttendanceBinding
+//import tokyo.mstp015v.attendance.databinding.FragmentCheckAttendanceBinding
 import tokyo.mstp015v.attendance.realm.Attendance
 
 class CheckAttendanceFragment : Fragment() {
+
+    class RecyclerViewAdapter( val list : List<CheckAttendance>):RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder>(){
+        class ViewHolder( view : View ): RecyclerView.ViewHolder(view){
+            val textCheckSubName = view.findViewById<TextView>(R.id.textCheckSubName)
+            val textCheckTotal = view.findViewById<TextView>(R.id.textCheckTotal)
+            val textCheckKesseki = view.findViewById<TextView>(R.id.textCheckKesseki)
+            val textCheckChikoku = view.findViewById<TextView>(R.id.textCheckChikoku)
+            val textCheckKouketsu = view.findViewById<TextView>(R.id.textCheckKouketsu)
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.check_item,parent,false)
+            return ViewHolder( view )
+        }
+
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            val check = list.get( position )
+            holder.textCheckSubName.text = check.sub_name
+            holder.textCheckTotal.text = check.total.toString()
+            holder.textCheckKesseki.text = check.kesseki.toString()
+            holder.textCheckChikoku.text = check.chikoku.toString()
+            holder.textCheckKouketsu.text = check.kouketsu.toString()
+        }
+
+        override fun getItemCount(): Int {
+            return list.size
+        }
+    }
+
     private var _binding : FragmentCheckAttendanceBinding? = null
     private val binding get() = _binding!!
     private val args : CheckAttendanceFragmentArgs by navArgs()
@@ -38,6 +71,7 @@ class CheckAttendanceFragment : Fragment() {
             if( map.get( attendance.sub_name ) == null ){
                 //存在しないので新しく登録
                 item = CheckAttendance(attendance.sub_name,0,0,0,0)
+                map.put( attendance.sub_name , item )
             }else{
                 //存在するので、追加
                 item = map.get(attendance.sub_name)
@@ -52,7 +86,7 @@ class CheckAttendanceFragment : Fragment() {
         }
         fun getList() : List<CheckAttendance>{
             val list = mutableListOf<CheckAttendance>()
-
+            Log.d( "map" , map.get("工業簿記").toString() )
             for( item in map ){
                 list.add( item.value )
                 Log.d( "check" , item.value.toString() )
@@ -88,6 +122,10 @@ class CheckAttendanceFragment : Fragment() {
         }
 
         //Log.d( "list",list.getList().toString() )
+
+        val adapter = RecyclerViewAdapter( list.getList() )
+        binding.recyclerCheckAttendance.adapter = adapter
+        binding.recyclerCheckAttendance.layoutManager = LinearLayoutManager(context)
     }
 
     override fun onDestroy() {

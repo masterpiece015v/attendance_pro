@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
@@ -33,7 +34,11 @@ class EnterAttendanceFragment : Fragment() {
         private var at_code : Int = 0
 
         private var listener : ((Long,Int)->Unit)? = null
+        //private var listenerRowTrush : ((Long)->Unit)? = null
 
+        //fun setOnImageButtonListener( listener:((Long)->Unit)){
+        //    this.listenerRowTrush = listener
+        //}
         fun setOnRadioGroupCheckListener(listener: ((Long,Int)->Unit)){
             this.listener = listener
         }
@@ -42,6 +47,7 @@ class EnterAttendanceFragment : Fragment() {
             val textno = view.findViewById<TextView>(R.id.textAttNo)
             val textname = view.findViewById<TextView>(R.id.textAttName)
             val radioGroup = view.findViewById<RadioGroup>(R.id.radioGroup)
+            //val buttonTrush = view.findViewById<ImageButton>(R.id.buttonAttendanceRowTrush)
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -71,6 +77,9 @@ class EnterAttendanceFragment : Fragment() {
                 Log.d("item_id,at_code","${item.id},${at_code}")
                 listener!!.invoke( item!!.id, at_code )
             }
+            //holder.buttonTrush.setOnClickListener{
+            //    listenerRowTrush!!.invoke( item!!.id )
+            //}
         }
     }
 
@@ -82,27 +91,38 @@ class EnterAttendanceFragment : Fragment() {
         _binding = FragmentEnterAttendanceBinding.inflate(inflater,container,false)
         return binding.root
     }
+    private lateinit var g_name : String
+    private var year : Int = 0
+    private var month : Int =0
+    private var date : Int = 0
+    private var timed : Int = 0
+    private lateinit var day : String
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val g_name = args.gName
+        g_name = args.gName
         val sub_name = args.subName
-        val year = args.year
-        val month = args.month
-        val date = args.date
-        val timed = args.timed
+        year = args.year
+        month = args.month
+        date = args.date
+        timed = args.timed
+        day = args.day
+
+        //年月日を表示する
+        binding.textEnterAttendance.text = "${year}年${month}月${date}(${day})"
 
         realm = Realm.getDefaultInstance()
         var ret = realm.where<Attendance>()
             .equalTo("g_name",g_name)
-            .equalTo("sub_name",sub_name)
             .equalTo("year",year)
             .equalTo("month",month)
             .equalTo("date",date)
             .equalTo("timed",timed)
             .findAll()
-
+        //Log.d("ymd","${year},${month},${date},${timed}")
+        //Log.d("size" , ret.size.toString())
         if( ret.size == 0 ){
             //１件もなければ作る
             realm.executeTransaction{
@@ -139,15 +159,15 @@ class EnterAttendanceFragment : Fragment() {
         val adapter = RealmAdapter( ret )
         binding.recyclerAttendance.adapter = adapter
         adapter.setOnRadioGroupCheckListener { id, at_code ->
-            //realm.executeTransactionAsync {
-            //    val ret = it.where<Attendance>().equalTo("id",id).findFirst()
-            //    ret?.at_code = at_code
-            //}
             atcodemap[id] = at_code
         }
+        //adapter.setOnImageButtonListener { id ->
+        //    realm.executeTransaction{
+        //        val ret = it.where<Attendance>().equalTo("id",id).findFirst()
+        //        ret!!.deleteFromRealm()
+        //    }
+        //}
         binding.recyclerAttendance.layoutManager = LinearLayoutManager( context )
-
-
     }
     override fun onDestroy() {
         super.onDestroy()
@@ -160,5 +180,6 @@ class EnterAttendanceFragment : Fragment() {
         }
         _binding = null
         realm.close()
+        atcodemap.clear()
     }
 }

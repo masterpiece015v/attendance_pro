@@ -14,22 +14,36 @@
         android:layout_height="match_parent"
         android:layout_marginBottom="1dp"
         android:background="@color/white"
+        android:paddingLeft="10dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
+        <ImageButton
+            android:id="@+id/imageTrushButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="@+id/textTrush3_3"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/textTrush3_3"
+            app:layout_constraintVertical_bias="0.523"
+            app:srcCompat="@drawable/ic_baseline_delete_24"
+            tools:ignore="SpeakableTextPresentCheck" />
+
         <TextView
             android:id="@+id/textTrush3_1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="24dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginStart="16dp"
             android:text="TextView"
             android:textSize="20sp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/imageTrushButton"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
@@ -41,7 +55,8 @@
             android:textSize="20sp"
             app:layout_constraintBottom_toBottomOf="@+id/textTrush3_1"
             app:layout_constraintStart_toEndOf="@+id/textTrush3_1"
-            app:layout_constraintTop_toTopOf="@+id/textTrush3_1" />
+            app:layout_constraintTop_toTopOf="@+id/textTrush3_1"
+            app:layout_constraintVertical_bias="0.0" />
 
         <TextView
             android:id="@+id/textTrush3_3"
@@ -52,19 +67,8 @@
             android:textSize="20sp"
             app:layout_constraintBottom_toBottomOf="@+id/textTrush3_2"
             app:layout_constraintStart_toEndOf="@+id/textTrush3_2"
-            app:layout_constraintTop_toTopOf="@+id/textTrush3_2" />
-
-        <ImageButton
-            android:id="@+id/imageTrushButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="24dp"
-            android:minHeight="48dp"
-            app:layout_constraintBottom_toBottomOf="@+id/textTrush3_3"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/textTrush3_3"
-            app:srcCompat="@drawable/ic_baseline_delete_24"
-            tools:ignore="SpeakableTextPresentCheck" />
+            app:layout_constraintTop_toTopOf="@+id/textTrush3_2"
+            app:layout_constraintVertical_bias="0.0" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
