@@ -5,7 +5,7 @@
     android:id="@+id/frameLayout9"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".CheckAttendanceForGroupFragment" >
+    tools:context="tokyo.mstp015v.attendance_pro.CheckAttendanceForGroupFragment" >
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerCheckAttendanceForGroup"

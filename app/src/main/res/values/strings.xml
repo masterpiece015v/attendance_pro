@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Attendance</string>
+    <string name="app_name">Attendance_Pro</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="data_add_value">データ作成</string>
@@ -17,6 +17,9 @@
     <string name="text_base_setting">基本設定</string>
     <string name="text_main_title">出席管理アプリ</string>
     <string name="subject_name">科目名</string>
-
+    <string name="group_select">グループ選択</string>
+    <string name="student_select">学生選択</string>
+    <string name="time_select">時間を選択する</string>
+    <string name="group_edit">グループの編集</string>
 
 </resources>
