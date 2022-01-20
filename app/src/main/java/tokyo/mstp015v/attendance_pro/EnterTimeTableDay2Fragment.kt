@@ -4,6 +4,7 @@ import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -47,6 +48,7 @@ class EnterTimeTableDay2Fragment(var g_name:String,
 
     override fun onResume() {
         super.onResume()
+        Log.d("entertimetableday2","onResume")
         //チェックリストの作成
         list.clear()
         val checkret = realm.where<Attendance>()
@@ -64,15 +66,49 @@ class EnterTimeTableDay2Fragment(var g_name:String,
 
         //一度消す
         binding.linearEnterTimeTable2.removeAllViews()
+        data class TimeTableMini(var timed:Int,var sub_name:String,var sub_mentor:String)
+        val itemlist = mutableListOf<TimeTableMini>()
 
+        for( i in 1..max_timed){
+            //attendanceにあればそれを使う
+            val ret1 = realm.where<Attendance>()
+                .equalTo("g_name",g_name)
+                .equalTo("year",year)
+                .equalTo("month",month)
+                .equalTo("date",date)
+                .equalTo("timed",i)
+                .findFirst()
+
+            if( ret1 != null ){
+                val item = TimeTableMini(i,ret1.sub_name,ret1.sub_mentor)
+                itemlist.add( item )
+            }else{
+                //attendanceになければTimeTableを使う
+                val ret2 = realm.where<TimeTable>()
+                    .equalTo("g_name",g_name)
+                    .equalTo("day",day)
+                    .equalTo( "timed",i)
+                    .findFirst()
+
+                    if( ret2 != null ){
+                        val item = TimeTableMini( i,ret2.sub_name,ret2.sub_mentor)
+                        itemlist.add( item )
+                    }else{
+                        val item = TimeTableMini( i ,"","")
+                        itemlist.add( item )
+                    }
+            }
+        }
+        /*
         val ret = realm.where<TimeTable>()
             .equalTo("g_name",g_name)
             .equalTo("day",day)
             .lessThanOrEqualTo("timed",max_timed)
             .sort("timed")
             .findAll()
-
-        ret.forEach {db->
+         */
+        //ret.forEach {db->
+        itemlist.forEach{db->
             val linear = LinearLayout(context)
             val row = layoutInflater.inflate(R.layout.text_item_3_trush,linear)
             row.findViewById<TextView>(R.id.textTrush3_1).let{
@@ -88,15 +124,13 @@ class EnterTimeTableDay2Fragment(var g_name:String,
 
             //クリックイベント
             linearTrush.setOnClickListener{
-
                 if( db.sub_mentor.length > 0 ) {
                 //科目名があれば出席入力ができる
                     val action =
                         EnterAttendanceTimeTableFragmentDirections.actionToEnterAttendanceFragment(
-                            db.g_name, db.sub_name!!, year, month, date, db.timed, day)
+                            g_name, db.sub_name!!, year, month, date, db.timed, day ,db.sub_mentor )
                     findNavController().navigate(action)
                     linearTrush.setBackgroundColor(Color.parseColor("#FFFF99"))
-
                 }
             }
 
@@ -151,7 +185,10 @@ class EnterTimeTableDay2Fragment(var g_name:String,
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
+        realm.close()
+
     }
+
     fun setday( year:Int,month:Int,date:Int){
         this.year = year
         this.month = month

@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.fragment.navArgs
 import androidx.viewpager2.adapter.FragmentStateAdapter
@@ -67,6 +68,9 @@ class EnterAttendanceTimeTableFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        //キーボードを閉じる
+
+        Log.d("EnterAttendanceTimeTableFragment","onViewCreated")
         //入力チェックリストの作成
         realm = Realm.getDefaultInstance()
 
@@ -88,10 +92,11 @@ class EnterAttendanceTimeTableFragment : Fragment() {
 
         //日付の設定
         calendarRefresh(0)
-
+        Log.d("EnterAttendancetimeTable","calendarRefresh")
         //最初に表示するタブは曜日になるので
         binding.viewPagerEnterAttendance.setCurrentItem( day ,false )
-
+        Log.d("day",day.toString())
+        adapter.findFragment(day)?.onResume()
         //ページが変わるときのイベント
         binding.viewPagerEnterAttendance.registerOnPageChangeCallback(object: ViewPager2.OnPageChangeCallback(){
             override fun onPageSelected(position:Int){
@@ -100,14 +105,13 @@ class EnterAttendanceTimeTableFragment : Fragment() {
             }
         })
 
-        //カレンダーを表示
-        val ret = realm.where<Attendance>().equalTo("g_name",args.gName )
-            .sort("year").sort("month").sort("date")
-            .distinct("date","month","year")
-            .findAll()
-
-        //日付をタップするとカレンダーを表示する
+        //日付をタップするとカレンダーを表示するイベント
         binding.textDate.setOnClickListener {
+            val ret = realm.where<Attendance>().equalTo("g_name",args.gName )
+                .sort("year").sort("month").sort("date")
+                .distinct("date","month","year")
+                .findAll()
+
             val list = mutableListOf<String>()
             ret.forEach {
                 list.add( "${it.year}${it.month}${it.date}")
@@ -125,7 +129,7 @@ class EnterAttendanceTimeTableFragment : Fragment() {
 
                     val i = calendar.get( Calendar.DAY_OF_WEEK) - 2
                     binding.viewPagerEnterAttendance.setCurrentItem(i, false)
-                    Log.d( "i" , "${i},${binding.viewPagerEnterAttendance.currentItem}")
+                    //Log.d( "i" , "${i},${binding.viewPagerEnterAttendance.currentItem}")
                     if( i == binding.viewPagerEnterAttendance.currentItem ) {
                         //日付は変わるが曜日が変わらないとき
                         adapter.findFragment(i)?.onResume()
@@ -136,6 +140,7 @@ class EnterAttendanceTimeTableFragment : Fragment() {
                 })
             dialog.show(parentFragmentManager,"dialog")
         }
+
     }
 
     fun calendarRefresh(i : Int){

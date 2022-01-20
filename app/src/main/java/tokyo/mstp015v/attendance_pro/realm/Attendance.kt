@@ -15,5 +15,6 @@ open class Attendance(
     var date:Int=0,
     var timed:Int=0,
     var sub_name:String="",
+    var sub_mentor:String="",
     var at_code:Int=0,
 ): RealmObject()

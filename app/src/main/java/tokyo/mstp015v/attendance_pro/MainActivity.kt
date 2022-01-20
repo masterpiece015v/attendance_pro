@@ -35,8 +35,6 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import tokyo.mstp015v.attendance_pro.databinding.ActivityMainBinding
-//import tokyo.mstp015v.attendance.databinding.ActivityMainBinding
-
 import tokyo.mstp015v.attendance_pro.realm.Attendance
 import tokyo.mstp015v.attendance_pro.realm.Group
 import tokyo.mstp015v.attendance_pro.realm.Student
@@ -329,7 +327,7 @@ class MainActivity : AppCompatActivity() {
 
                 }
 
-                binding.progMain.visibility = ProgressBar.INVISIBLE
+                //binding.progMain.visibility = ProgressBar.INVISIBLE
                 client!!.signOut()
 
             }
@@ -382,13 +380,13 @@ class MainActivity : AppCompatActivity() {
             var tt_res : ValueRange? = null
             withContext(Dispatchers.Default ){
                 //studentのリストア
-                st_res = service.spreadsheets().values().get(sheet_id!!,"student!A1:K300").execute()
+                st_res = service.spreadsheets().values().get(sheet_id!!,"student!A1:L300").execute()
                 //groupのリストア
-                gr_res = service.spreadsheets().values().get(sheet_id!!,"group!A1:K300").execute()
+                gr_res = service.spreadsheets().values().get(sheet_id!!,"group!A1:L300").execute()
                 //attendanceのリストア
-                at_res = service.spreadsheets().values().get(sheet_id!!,"attendance!A1:K1000").execute()
+                at_res = service.spreadsheets().values().get(sheet_id!!,"attendance!A1:L5000").execute()
                 //timetableのリストア
-                tt_res = service.spreadsheets().values().get(sheet_id!!,"timetable!A1:K1000").execute()
+                tt_res = service.spreadsheets().values().get(sheet_id!!,"timetable!A1:L5000").execute()
             }
             //レルムに追加
             realm.executeTransaction{
@@ -442,7 +440,8 @@ class MainActivity : AppCompatActivity() {
                         rat.date = row[7].toString().toInt()
                         rat.timed = row[8].toString().toInt()
                         rat.sub_name = row[9].toString()
-                        rat.at_code = row[10].toString().toInt()
+                        rat.sub_mentor = row[10].toString()
+                        rat.at_code = row[11].toString().toInt()
                     }
                 }
                 cnt++
@@ -542,7 +541,7 @@ class MainActivity : AppCompatActivity() {
             at.forEach{
                 this.add( mutableListOf(
                     it.id,it.st_id,it.st_name,it.g_name,it.no,it.year,
-                    it.month,it.date,it.timed,it.sub_name,it.at_code
+                    it.month,it.date,it.timed,it.sub_name,it.sub_mentor,it.at_code
                 ))
             }
         })
@@ -646,7 +645,7 @@ class MainActivity : AppCompatActivity() {
         })
         sheetmap.put("attendance",createValueList().apply{
             this.add( mutableListOf("id","st_id","st_name","g_name","no","year","month",
-                "daye","timed","sub_name","at_code"))
+                "daye","timed","sub_name","sub_mentor","at_code"))
         })
         sheetmap.put("timetable",createValueList().apply{
             this.add(mutableListOf("id","g_name","day","timed","sub_name","sub_mentor"))

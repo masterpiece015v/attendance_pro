@@ -26,9 +26,6 @@
         android:label="@string/text_setting_value"
         tools:layout="@layout/fragment_setting">
         <action
-            android:id="@+id/action_to_mainFragment"
-            app:destination="@id/mainFragment" />
-        <action
             android:id="@+id/action_to_makeGroupFragment"
             app:destination="@id/makeGroupFragment" />
         <action
@@ -42,19 +39,12 @@
         android:id="@+id/makeGroupFragment"
         android:name="tokyo.mstp015v.attendance_pro.MakeGroupFragment"
         android:label="@string/group_edit"
-        tools:layout="@layout/fragment_make_group">
-        <action
-            android:id="@+id/action_to_settingFragment"
-            app:destination="@id/settingFragment" />
-    </fragment>
+        tools:layout="@layout/fragment_make_group"/>
     <fragment
         android:id="@+id/makeStudentForGroupListFragment"
         android:name="tokyo.mstp015v.attendance_pro.MakeStudentForGroupListFragment"
         android:label="@string/group_select"
         tools:layout="@layout/fragment_make_student_for_group_list">
-        <action
-            android:id="@+id/action_to_settingFragment"
-            app:destination="@id/settingFragment" />
         <action
             android:id="@+id/action_to_makeStudentFragment"
             app:destination="@id/makeStudentFragment" />
@@ -64,9 +54,6 @@
         android:name="tokyo.mstp015v.attendance_pro.MakeStudentFragment"
         android:label="@string/text_student_make"
         tools:layout="@layout/fragment_make_student">
-        <action
-            android:id="@+id/action_to_makeStudentForGroupListFragment"
-            app:destination="@id/makeStudentForGroupListFragment" />
         <argument
             android:name="g_name"
             android:defaultValue="null"
@@ -78,9 +65,6 @@
         android:label="@string/group_select"
         tools:layout="@layout/fragment_make_time_table_for_group">
         <action
-            android:id="@+id/action_to_settingFragment"
-            app:destination="@id/settingFragment" />
-        <action
             android:id="@+id/action_to_makeTimeTableFragment"
             app:destination="@id/makeTimeTableFragment" />
     </fragment>
@@ -89,9 +73,6 @@
         android:name="tokyo.mstp015v.attendance_pro.MakeTimeTableFragment"
         android:label="@string/text_timetable_make"
         tools:layout="@layout/fragment_make_time_table">
-        <action
-            android:id="@+id/action_to_makeTimeTableForGroupFragment"
-            app:destination="@id/makeTimeTableForGroupFragment" />
         <argument
             android:name="g_name"
             app:argType="string"
@@ -103,9 +84,6 @@
         android:label="@string/group_select"
         tools:layout="@layout/fragment_enter_attendance_for_group">
         <action
-            android:id="@+id/action_to_mainFragment"
-            app:destination="@id/mainFragment" />
-        <action
             android:id="@+id/action_to_enterAttendanceTimeTableFragment"
             app:destination="@id/enterAttendanceTimeTableFragment" />
     </fragment>
@@ -114,9 +92,6 @@
         android:name="tokyo.mstp015v.attendance_pro.EnterAttendanceTimeTableFragment"
         android:label="@string/time_select"
         tools:layout="@layout/fragment_enter_attendance_time_table">
-        <action
-            android:id="@+id/action_to_enterAttendanceForGroupFragment"
-            app:destination="@id/enterAttendanceForGroupFragment" />
         <argument
             android:name="g_name"
             app:argType="string" />
@@ -129,9 +104,6 @@
         android:name="tokyo.mstp015v.attendance_pro.EnterAttendanceFragment"
         android:label="@string/attendance_add_value"
         tools:layout="@layout/fragment_enter_attendance">
-        <action
-            android:id="@+id/action_to_enterAttendanceTimeTableFragment"
-            app:destination="@id/enterAttendanceTimeTableFragment" />
         <argument
             android:name="g_name"
             app:argType="string" />
@@ -153,15 +125,15 @@
         <argument
             android:name="day"
             app:argType="string" />
+        <argument
+            android:name="sub_mentor"
+            app:argType="string" />
     </fragment>
     <fragment
         android:id="@+id/checkAttendanceForGroupFragment"
         android:name="tokyo.mstp015v.attendance_pro.CheckAttendanceForGroupFragment"
         android:label="@string/group_select"
         tools:layout="@layout/fragment_check_attendance_for_group">
-        <action
-            android:id="@+id/action_to_mainFragment"
-            app:destination="@id/mainFragment" />
         <action
             android:id="@+id/action_to_checkAttendanceForStudentFragment"
             app:destination="@id/checkAttendanceForStudentFragment" />
@@ -171,9 +143,6 @@
         android:name="tokyo.mstp015v.attendance_pro.CheckAttendanceForStudentFragment"
         android:label="@string/student_select"
         tools:layout="@layout/fragment_check_attendance_for_student">
-        <action
-            android:id="@+id/action_to_checkAttendanceForGroupFragment"
-            app:destination="@id/checkAttendanceForGroupFragment" />
         <argument
             android:name="g_name"
             app:argType="string" />
@@ -186,9 +155,6 @@
         android:name="tokyo.mstp015v.attendance_pro.CheckAttendanceFragment"
         android:label="@string/attendance_output_value"
         tools:layout="@layout/fragment_check_attendance">
-        <action
-            android:id="@+id/action_to_checkAttendanceForStudentFragment"
-            app:destination="@id/checkAttendanceForStudentFragment" />
         <argument
             android:name="st_id"
             app:argType="string" />

@@ -21,5 +21,7 @@
     <string name="student_select">学生選択</string>
     <string name="time_select">時間を選択する</string>
     <string name="group_edit">グループの編集</string>
-
+    <string name="timed">時間</string>
+    <string name="subject">科目</string>
+    <string name="mentor">担当</string>
 </resources>
